@@ -2,6 +2,8 @@ const db = require("../models");
 const config = require("../config/auth.config");
 const { user: User, role: Role, refreshToken: RefreshToken } = db;
 
+const Op = db.Sequelize.Op;
+
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
@@ -60,32 +62,41 @@ exports.signin = (req, res) => {
         });
       }
 
-      const token = jwt.sign({ id: user.id }, config.secret, {
-        expiresIn: config.jwtExpiration,
-      });
-
-      let refreshToken = await RefreshToken.createToken(user);
-
-      let authorities = [];
+      // Kontrollera om användaren har en administratsroll
       user.getRoles().then((roles) => {
-        for (let i = 0; i < roles.length; i++) {
-          authorities.push("ROLE_" + roles[i].name.toUpperCase());
-        }
+        if (roles.some(role => role.name === "admin")) {
+          const token = jwt.sign({ id: user.id }, config.secret, {
+            expiresIn: config.jwtExpiration,
+          });
 
-        res.status(200).send({
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          roles: authorities,
-          accessToken: token,
-          refreshToken: refreshToken,
-        });
+          let refreshToken = RefreshToken.createToken(user);
+
+          let authorities = [];
+          roles.forEach((role) => {
+            authorities.push("ROLE_" + role.name.toUpperCase());
+          });
+
+          res.status(200).send({
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            roles: authorities,
+            accessToken: token,
+            refreshToken: refreshToken,
+          });
+        } else {
+          // Användaren har inte administratörsroll
+          res.status(403).send({
+            message: "Permission denied. Only administrators can log in."
+          });
+        }
       });
     })
     .catch((err) => {
       res.status(500).send({ message: err.message });
     });
 };
+
 
 exports.refreshToken = async (req, res) => {
   const { refreshToken: requestToken } = req.body;
