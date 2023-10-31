@@ -19,15 +19,22 @@ module.exports = function (app) {
   // Hämta alla inlägg (publik åtkomst)
   app.get("/api/posts", postController.getAllPosts);
 
-  // app.put(
-  //   "/api/editPost/:postId",
-  //   [authJwt.verifyToken, authJwt.isAdmin],
-  //   postController.editPost
-  // );
-
-  // app.delete(
-  //   "/api/deletePost/:postId",
-  //   [authJwt.verifyToken, authJwt.isAdmin],
-  //   postController.deletePost
-  // );
+  app.delete(
+    "/api/deletePost/:id",
+    [authJwt.verifyToken, authJwt.isAdmin],
+    postController.deletePost
+  );
 };
+
+
+// app.put(
+//   "/api/editPost/:postId",
+//   [authJwt.verifyToken, authJwt.isAdmin],
+//   postController.editPost
+// );
+
+// app.delete(
+//   "/api/deletePost/:postId",
+//   [authJwt.verifyToken, authJwt.isAdmin],
+//   postController.deletePost
+// );

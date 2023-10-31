@@ -11,10 +11,10 @@ const catchError = (err, res) => {
       .status(401)
       .send({ message: "Unauthorized! Access Token was expired!" });
   }
-  return res.sendStatus(401).send({ message: "Unauthorized!" });
+  return res.status(401).send({ message: "Unauthorized!" });
 };
 
-verifyToken = (req, res, next) => {
+const verifyToken = (req, res, next) => {
   let token = req.headers["x-access-token"];
 
   if (!token) {
@@ -34,7 +34,7 @@ verifyToken = (req, res, next) => {
   });
 };
 
-isAdmin = (req, res, next) => {
+const isAdmin = (req, res, next) => {
   User.findByPk(req.userId).then((user) => {
     user.getRoles().then((roles) => {
       for (let i = 0; i < roles.length; i++) {
@@ -50,17 +50,17 @@ isAdmin = (req, res, next) => {
   });
 };
 
-isUser = (req, res, next) => {
+const isUser = (req, res, next) => {
   User.findByPk(req.userId).then((user) => {
     user.getRoles().then((roles) => {
       for (let i = 0; i < roles.length; i++) {
-        if (roles[i].name === "user" || roles[i].name === "admin") {
+        if (roles[i].name === "user") {
           next();
           return;
         }
       }
       res.status(403).send({
-        message: "Require User or Admin Role!",
+        message: "Require User Role!",
       });
     });
   });

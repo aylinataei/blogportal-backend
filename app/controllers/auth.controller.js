@@ -62,41 +62,33 @@ exports.signin = (req, res) => {
         });
       }
 
-      // Kontrollera om användaren har en administratsroll
+      // Get user roles
       user.getRoles().then((roles) => {
-        if (roles.some(role => role.name === "admin")) {
-          const token = jwt.sign({ id: user.id }, config.secret, {
-            expiresIn: config.jwtExpiration,
-          });
+        const token = jwt.sign({ id: user.id }, config.secret, {
+          expiresIn: config.jwtExpiration,
+        });
 
-          let refreshToken = RefreshToken.createToken(user);
+        let refreshToken = RefreshToken.createToken(user);
 
-          let authorities = [];
-          roles.forEach((role) => {
-            authorities.push("ROLE_" + role.name.toUpperCase());
-          });
+        let authorities = [];
+        roles.forEach((role) => {
+          authorities.push("ROLE_" + role.name.toUpperCase());
+        });
 
-          res.status(200).send({
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            roles: authorities,
-            accessToken: token,
-            refreshToken: refreshToken,
-          });
-        } else {
-          // Användaren har inte administratörsroll
-          res.status(403).send({
-            message: "Permission denied. Only administrators can log in."
-          });
-        }
+        res.status(200).send({
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          roles: authorities,
+          accessToken: token,
+          refreshToken: refreshToken,
+        });
       });
     })
     .catch((err) => {
       res.status(500).send({ message: err.message });
     });
 };
-
 
 exports.refreshToken = async (req, res) => {
   const { refreshToken: requestToken } = req.body;
