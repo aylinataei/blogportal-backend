@@ -24,6 +24,12 @@ module.exports = function (app) {
     [authJwt.verifyToken, authJwt.isAdmin],
     postController.deletePost
   );
+
+  app.put(
+    "/api/updatePost/:id",
+    [authJwt.verifyToken, authJwt.isAdmin],
+    postController.updatePost
+  );
 };
 
 
@@ -33,8 +39,3 @@ module.exports = function (app) {
 //   postController.editPost
 // );
 
-// app.delete(
-//   "/api/deletePost/:postId",
-//   [authJwt.verifyToken, authJwt.isAdmin],
-//   postController.deletePost
-// );
