@@ -29,4 +29,10 @@ module.exports = function (app) {
     [authJwt.verifyToken, authJwt.isAdmin],
     controller.updateUserRole
   );
+
+  app.delete(
+    "/api/deleteUser/:id",
+    [authJwt.verifyToken, authJwt.isAdmin],
+    controller.deleteUser
+  );
 };
