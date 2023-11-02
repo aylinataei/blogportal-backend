@@ -31,11 +31,3 @@ module.exports = function (app) {
     postController.updatePost
   );
 };
-
-
-// app.put(
-//   "/api/editPost/:postId",
-//   [authJwt.verifyToken, authJwt.isAdmin],
-//   postController.editPost
-// );
-
