@@ -7,7 +7,7 @@ exports.inviteUser = async (req, res) => {
   const { email } = req.body;
 
   try {
-    const invitationToken = crypto.randomBytes(20).toString("hex");
+    const invitationToken = crypto.randomBytes(20).toString("hex");// ändra till jwt
     Invite.create({
       token: invitationToken,
       email: email,
