@@ -1,10 +1,12 @@
+const jwt = require("jsonwebtoken");
 const db = require("../models");
 const config = require("../config/auth.config");
 const { user: User, role: Role, refreshToken: RefreshToken } = db;
 
+
 const Op = db.Sequelize.Op;
 
-const jwt = require("jsonwebtoken");
+
 const bcrypt = require("bcryptjs");
 
 exports.signup = (req, res) => {
@@ -142,3 +144,43 @@ exports.refreshToken = async (req, res) => {
     return res.status(500).send({ message: err });
   }
 };
+exports.createUserWithPassword = async (req, res) => {
+  const { token, password, username } = req.body;
+
+  try {
+    const userToken = jwt.verify(token, config.secret);
+    const userEmail = userToken.email;
+
+    // Skapa användaren i databasen
+    User.create({
+      email: userEmail,
+      username: username,
+      password: bcrypt.hashSync(password, 8),
+    })
+      .then((user) => {
+        if (req.body.roles) {
+          Role.findAll({
+            where: {
+              name: {
+                [Op.or]: req.body.roles,
+              },
+            },
+          }).then((roles) => {
+            user.setRoles(roles).then(() => {
+              res.send({ message: "User was registered successfully!" });
+            });
+          });
+        } else {
+          user.setRoles([1]).then(() => {
+            res.send({ message: "User was registered successfully!" });
+          });
+        }
+      })
+      .catch((err) => {
+        res.status(500).send({ message: err.message });
+      });
+  } catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
+};
+

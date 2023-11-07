@@ -1,21 +1,28 @@
+const jwt = require('jsonwebtoken');
+
 const db = require("../models");
 const Invite = db.invite;
 const nodemailer = require("nodemailer");
-const crypto = require("crypto");
+const config = require("../config/auth.config");
 
 exports.inviteUser = async (req, res) => {
   const { email } = req.body;
 
   try {
-    const invitationToken = crypto.randomBytes(20).toString("hex");// ändra till jwt
+
+    const invitationToken = jwt.sign({ email: email }, config.secret, {
+      expiresIn: config.jwtExpiration,
+    });
+
+    // Spara JWT-token i din databas
     Invite.create({
       token: invitationToken,
       email: email,
     });
 
-    const invitationLink = `https://localhost:8080/set-password/${invitationToken}`;
+    const invitationLink = `http://localhost:3000/set-password/?invitationToken=${invitationToken}`;
 
-    // Skicka e-post till användaren med inbjudningslänken
+
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -37,19 +44,23 @@ exports.inviteUser = async (req, res) => {
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.log(error);
-        return res
-          .status(500)
-          .send({
-            message: "Något gick fel vid sändningen av inbjudan via e-post.",
-          });
+        return res.status(500).send({
+          message: "Något gick fel vid sändningen av inbjudan via e-post.",
+        });
       } else {
         console.log("Email sent: " + info.response);
-        return res
-          .status(200)
-          .send({ message: "Inbjudan skickad framgångsrikt via e-post!" });
+        return res.status(200).send({
+          message: "Inbjudan skickad framgångsrikt via e-post!",
+        });
       }
     });
   } catch (err) {
     return res.status(500).send({ message: err.message });
   }
+
+  return res.status(200).send({
+    message: "Inbjudan skickad framgångsrikt via e-post!",
+  });
 };
+
+

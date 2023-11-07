@@ -25,4 +25,7 @@ module.exports = function (app) {
   app.post("/api/auth/signin", authController.signin);
 
   app.post("/api/auth/inviteUser", inviteController.inviteUser)
+
+  app.post("/api/createUserWithPassword", authController.createUserWithPassword);
+
 };
