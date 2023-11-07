@@ -151,6 +151,12 @@ exports.createUserWithPassword = async (req, res) => {
     const userToken = jwt.verify(token, config.secret);
     const userEmail = userToken.email;
 
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+    if (!passwordRegex.test(password)) {
+      return res.status(400).send({ message: "Ogiltigt lösenord." });
+    }
+
     // Skapa användaren i databasen
     User.create({
       email: userEmail,
