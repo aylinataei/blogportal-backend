@@ -1,18 +1,23 @@
 const db = require("../models");
 const Post = db.post;
+const { authJwt } = require("../middleware");
 
-exports.createPost = (req, res) => {
-  Post.create({
-    title: req.body.title,
-    content: req.body.content,
-  })
-    .then((post) => {
-      res.send({ message: "Post created successfully!", post });
+exports.createPost = [
+  authJwt.verifyToken,
+  authJwt.isAdmin,
+  (req, res) => {
+    Post.create({
+      title: req.body.title,
+      content: req.body.content,
     })
-    .catch((err) => {
-      res.status(500).send({ message: err.message });
-    });
-};
+      .then((post) => {
+        res.send({ message: "Post created successfully!", post });
+      })
+      .catch((err) => {
+        res.status(500).send({ message: err.message });
+      });
+  },
+];
 
 exports.getAllPosts = (req, res) => {
   Post.findAll()
@@ -43,6 +48,7 @@ exports.deletePost = async (req, res) => {
     res.status(500).send({ message: err.message });
   }
 };
+
 exports.updatePost = async (req, res) => {
   const postId = req.params.id;
 
@@ -50,14 +56,13 @@ exports.updatePost = async (req, res) => {
     const post = await Post.findByPk(postId);
 
     if (!post) {
-      return res.status(404).send({ message: `Kunde inte hitta inlägget med id ${postId}.` });
+      return res
+        .status(404)
+        .send({ message: `Kunde inte hitta inlägget med id ${postId}.` });
     }
-
-    // Uppdatera postens egenskaper baserat på req.body
     post.title = req.body.title;
     post.content = req.body.content;
 
-    // Spara ändringarna i databasen
     await post.save();
 
     res.send({ message: "Inlägg uppdaterat framgångsrikt!", post });

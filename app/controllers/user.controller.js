@@ -1,6 +1,8 @@
 const db = require("../models");
+const { authJwt } = require("../middleware");
 const { user: User, role: Role, refreshToken: RefreshToken } = db;
 const Op = db.Sequelize.Op;
+
 exports.allAccess = (req, res) => {
   res.status(200).send("Public Content.");
 };
@@ -45,35 +47,52 @@ exports.updateUserRole = (req, res) => {
 
 exports.deleteUser = (req, res) => {
   const userId = req.params.id;
+  authJwt.verifyToken,
+    authJwt.isAdmin,
 
-  User.findByPk(userId)
-    .then((user) => {
-      if (!user) {
-        return res
-          .status(404)
-          .send({ message: `Kunde inte hitta användaren med id ${userId}.` });
-      }
+    User.findByPk(userId)
+      .then((user) => {
+        if (!user) {
+          return res
+            .status(404)
+            .send({ message: `Kunde inte hitta användaren med id ${userId}.` });
+        }
 
-      user
-        .destroy()
-        .then(() => {
-          res.send({ message: "Användaren är borttagen!" });
-        })
-        .catch((error) => {
-          res.status(500).send({ message: error.message });
-        });
-    })
-    .catch((err) => {
-      res.status(500).send({ message: err.message });
-    });
+        user
+          .destroy()
+          .then(() => {
+            res.send({ message: "Användaren är borttagen!" });
+          })
+          .catch((error) => {
+            res.status(500).send({ message: error.message });
+          });
+      })
+      .catch((err) => {
+        res.status(500).send({ message: err.message });
+      });
 };
 
-exports.getAllUsers = (req, res) => {
-  User.findAll()
-    .then((users) => {
-      res.status(200).json(users);
-    })
-    .catch((error) => {
-      res.status(500).send({ message: error.message });
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.findAll({
+      include: Role, // Detta kommer att inkludera användarrollerna
     });
+
+    const usersWithRoles = users.map((user) => {
+      const roles = user.roles.map((role) => role.name);
+      return {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        roles: roles,
+      };
+    });
+
+    res.status(200).json(usersWithRoles);
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
 };
+
+
+
