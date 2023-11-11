@@ -37,4 +37,5 @@ module.exports = function (app) {
   );
   app.get("/api/users", controller.getAllUsers);
 
+  app.get("/api/invitedUsers", controller.getInvitedUsers);
 };

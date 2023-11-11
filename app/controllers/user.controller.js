@@ -1,6 +1,6 @@
 const db = require("../models");
 const { authJwt } = require("../middleware");
-const { user: User, role: Role, refreshToken: RefreshToken } = db;
+const { user: User, role: Role, refreshToken: RefreshToken, invite: Invite } = db;
 const Op = db.Sequelize.Op;
 
 exports.allAccess = (req, res) => {
@@ -94,5 +94,14 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
+exports.getInvitedUsers = async (req, res) => {
+  try {
+    const invitedUsers = await Invite.findAll();
+
+    res.status(200).json(invitedUsers);
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+};
 
 
