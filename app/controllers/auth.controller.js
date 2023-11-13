@@ -95,6 +95,7 @@ exports.signin = (req, res) => {
           email: user.email,
           roles: authorities,
           accessToken: token,
+          expiresIn: config.jwtExpiration,
           refreshToken: refreshToken,
         });
       });
