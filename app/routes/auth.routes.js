@@ -29,4 +29,10 @@ module.exports = function (app) {
 
   app.post("/api/createUserWithPassword", authController.createUserWithPassword);
 
+  app.delete(
+    "/api/removeInvitedUser",
+    [authJwt.verifyToken, authJwt.isAdmin],
+    inviteController.removeInvitedUser
+  );
+
 };
